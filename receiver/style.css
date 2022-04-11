@@ -1,0 +1,17 @@
+.record {
+	display: block;
+	border-top: 1px dotted black;
+	padding: 10px;
+}
+
+#main-map { 
+	width: 50%;
+	float:left;
+	height: 400px;
+}
+
+#left, #right {
+	width: 20%;
+	float:left;
+	font-size: 10px;
+}
