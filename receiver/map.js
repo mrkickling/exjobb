@@ -39,7 +39,7 @@ function generatePoints(json, icon) {
 function run() {
     getRecords(record1.value, record1result, greenIcon).then(function(rec1) {
         getRecords(record2.value, record2result, redIcon).then(function(rec2) {
-            linesBetweenPoints(rec1, rec2);
+            if (showTraces.value) {linesBetweenPoints(rec1, rec2);}
         });
     });
 }
@@ -91,6 +91,8 @@ greenIcon = new L.Icon({
 
 button = document.getElementById("button");
 button.addEventListener('click', run);
+
+showTraces = document.getElementById("showTraces");
 
 record1 = document.getElementById("record1");
 record2 = document.getElementById("record2");

@@ -16,8 +16,8 @@ public class Test {
 	private Random mRandom;
 
 	public static Location move(Location location) {
-		location.setLatitude(location.getLatitude() + (2 * Math.random() - 1) / 100);
-		location.setLongitude(location.getLongitude() + (2 * Math.random() - 1) / 100);
+		location.setLatitude(location.getLatitude() + (1 + 1 * Math.random() - 1) / 100);
+		location.setLongitude(location.getLongitude() + (1 + 1 * Math.random() - 1) / 100);
 		return location;
 	}
 
@@ -53,7 +53,7 @@ public class Test {
 
 
 	public static void main(String[] args) {
-		showRandomOffset(10000);
+		moveAround(1000);
 	}
 
 	public static void moveAround(int x) {

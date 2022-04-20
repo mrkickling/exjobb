@@ -1,23 +1,14 @@
 <?php
-	require "passwords.php";
     header('Content-Type: application/json');
 ?>
 
-<?php
-$c = new mysqli("joakimloxdal.se.mysql", "joakimloxdal_se", $sql_pass, 'joakimloxdal_se');
-if ($c->connect_errno) {
-    printf("Connect failed: %s\n", $mysqli->connect_error);
-    exit();
-}
+<?php 	
+	include "passwords.php";
 
-	function addRecord($conn, $session, $lat, $lon, $data) {
-		if ($stmt = $conn->prepare("INSERT INTO requestcatcher(session, lat, lon, data) VALUES(?, ?, ?, ?);")) {
-			$stmt->bind_param("ssss", $session, $lat, $lon, $data);
-			$stmt->execute();
-			$stmt->close();
-		} else {
-			echo $conn->error;
-		}
+	$c = new mysqli("joakimloxdal.se.mysql", "joakimloxdal_se", "Kaninen123", 'joakimloxdal_se');
+	if ($c->connect_errno) {
+	    printf("Connect failed: %s\n", $mysqli->connect_error);
+	    exit();
 	}
 
 	function JSONify($positions, $icon) {
@@ -33,7 +24,7 @@ if ($c->connect_errno) {
 
 	function getAllRequests($conn, $session) {
 		$requests = [];
-		if ($stmt = $conn->prepare("SELECT * FROM requestcatcher WHERE session = ? ORDER BY time DESC")) {
+		if ($stmt = $conn->prepare("SELECT * FROM requestcatcher WHERE session = ? ORDER BY time")) {
 			$stmt->bind_param("s", $session);
 			$stmt->execute();
 			$result = $stmt->get_result();

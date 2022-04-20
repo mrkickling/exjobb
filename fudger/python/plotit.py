@@ -1,3 +1,4 @@
+import sys
 import matplotlib.pyplot as plt
 
 x_fine = []
@@ -5,15 +6,13 @@ y_fine = []
 x_coarse = []
 y_coarse = []
 
-img = plt.imread("map.png")
-
-with open('plot.csv', 'r') as f:
-	for line in f.readlines():
-		line = line.split(";")
-		x_fine.append(float(line[0]))
-		y_fine.append(float(line[1]))
-		x_coarse.append(float(line[2]))
-		y_coarse.append(float(line[3]))
+print("Starting")
+for line in sys.stdin:
+	line = line.split(";")
+	x_fine.append(float(line[0]))
+	y_fine.append(float(line[1]))
+	x_coarse.append(float(line[2]))
+	y_coarse.append(float(line[3]))
 
 plt.scatter(x_fine, y_fine, c='red')
 plt.plot(x_fine, y_fine, c='red')
@@ -26,5 +25,5 @@ plt.scatter(x_coarse, y_coarse, c='green')
 
 plt.ylabel('Lon')
 plt.xlabel('Lat')
-
+print("showing")
 plt.show()

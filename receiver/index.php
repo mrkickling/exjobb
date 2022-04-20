@@ -1,5 +1,5 @@
 <?php
-	require "passwords.php";
+	include "passwords.php";
 	function addRecord($conn, $session, $lat, $lon, $data) {
 		if ($stmt = $conn->prepare("INSERT INTO requestcatcher(session, lat, lon, data) VALUES(?, ?, ?, ?);")) {
 			$stmt->bind_param("ssss", $session, $lat, $lon, $data);

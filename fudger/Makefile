@@ -5,15 +5,13 @@ clean:
 	rm build/locationfudger/*.class
 
 plot:
-	java build/locationfudger/Test > out/plot.csv
-	python3 python/plotit.py
+	java -cp build locationfudger/Test | python3 python/plotit.py
 
 plot-offset:
-	java build/locationfudger/Test > out/plot.csv
-	python3 python/plotoffset.py
+	java -cp build locationfudger/Test | python3 python/plotoffset.py
 
 hack:
-	java build/locationfudger/Test > out/plot.csv
+	java -cp build locationfudger/Test > out/plot.csv
 	python3 python/approxToPrecise.py
 
 build-and-plot: build plot
