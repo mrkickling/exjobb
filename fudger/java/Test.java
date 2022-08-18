@@ -53,7 +53,7 @@ public class Test {
 
 
 	public static void main(String[] args) {
-		moveAround(1000);
+		standStillForXMilliSeconds(100000);
 	}
 
 	public static void moveAround(int x) {

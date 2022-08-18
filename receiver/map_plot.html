@@ -8,27 +8,25 @@
 		<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
 	    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
 	    crossorigin=""></script>
-	    <link rel="stylesheet" href="style.css">  
+	    <link rel="stylesheet" href="style-plotter.css">  
 
 	</head>
 	<body>
-		<h2>Request catcher 1.0 - exjobb</h2>
+		<div class="main">
+			<h2>Map plotter 1.0</h2>
 
-		Precise: <input type="text" id="record1">
-		<br>Approx: <input type="text" id="record2">
-		<br><button id="button">Click</button>
-		<br><input type="checkbox" id="showTraces"> Show traces 
-		<br>
+			<p>Input lat, lon comma separated. Each point should be separated by newline.</p>
 
-		<div id="left">
-			Left
+			<textarea id = "points"></textarea>
+
+			<br><button id="button">Plot</button>
+			<br>
+
 		</div>
+
 		<div id="main-map"></div>
-		<div id="right">
-			Right
-		</div>
 
-<script src='map.js?remokuladsmses'></script>
+<script src='mapplot.js'></script>
 
 	</body>
 

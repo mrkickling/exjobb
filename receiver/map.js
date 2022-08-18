@@ -1,7 +1,8 @@
 function generateList(json) {
     result = ""
+    result += "date,time,lat,lon<br>"
     for (var i = json.length - 1; i >= 0; i--) {
-        result += "<b>" + json[i]['time'] + " </b>: " + json[i]["lat"] + ", " + json[i]["lon"] + "<br>";
+        result += "<b>" + json[i]['time'].replace(" ", ",") + "," + json[i]["lat"] + "," + json[i]["lon"] + "<br>";
     }
     return result;
 }

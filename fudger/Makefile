@@ -11,8 +11,7 @@ plot-offset:
 	java -cp build locationfudger/Test | python3 python/plotoffset.py
 
 hack:
-	java -cp build locationfudger/Test > out/plot.csv
-	python3 python/approxToPrecise.py
+	java -cp build locationfudger/Test | python3 python/approxToPrecise.py
 
 build-and-plot: build plot
 

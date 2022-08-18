@@ -1,0 +1,28 @@
+import pandas as pd
+
+class GTFSReader:
+	folder_rel = "None"
+	bus_routes = {}
+
+	def __init__(self, folder_rel):
+		self.folder_rel = folder_rel
+		self.fetch_data()
+
+	def fetch_data(self):
+		routes_csv = pd.read_csv(self.folder_rel + '/' + 'routes.txt')
+		shapes_csv = pd.read_csv(self.folder_rel + '/' + 'shapes.txt')
+		trips_csv = pd.read_csv(self.folder_rel + '/' + 'trips.txt')
+		#stop_times = pd.read_csv(self.folder_rel + '/' + 'stop_times.txt')
+		self.get_shape_of_route("171", routes_csv, shapes_csv, trips_csv)
+
+	def get_shape_of_route(self, bus_nr, routes_csv, shapes_csv, trips_csv):
+		routes_filtered_nr = routes_csv[(routes_csv.route_short_name == bus_nr)]
+		route_id = routes_filtered_nr.iat[0,0]
+		# Find a trip id of route
+		trips_filtered = trips_csv[(trips_csv.route_id == route_id)]
+		trip_id = trips_filtered["trip_id"]
+		shape_id = trips_filtered["shape_id"].iloc[0]
+		print(trip_id, shape_id)
+		shapes_filtered = shapes_csv[(shapes_csv.shape_id == shape_id)]
+		print(shapes_filtered.iloc[3])
+
