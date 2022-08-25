@@ -1,7 +1,15 @@
-
+RANDOMOFFSET=true
 function generatePoints(json, icon) {
     for (var i = json.length - 1; i >= 0; i--) {
-        L.marker([json[i]['lat'], json[i]['lon']], {icon: icon}).addTo(mymap).bindPopup(json[i]['time'] + "<br>" + json[i]['lat'] + ", " + json[i]['lon']);
+        opacity = 1;
+        if (RANDOMOFFSET) {
+            opacity = 0.2;
+        }
+        if (RANDOMOFFSET && i == 0) {
+            L.marker([json[i]['lat'], json[i]['lon']], {icon: greenicon, opacity: 1.0}).addTo(mymap).bindPopup(json[i]['time'] + "<br>" + json[i]['lat'] + ", " + json[i]['lon']);
+        } else {
+            L.marker([json[i]['lat'], json[i]['lon']], {icon: icon, opacity: opacity}).addTo(mymap).bindPopup(json[i]['time'] + "<br>" + json[i]['lat'] + ", " + json[i]['lon']);
+        }
     }
 }
 
@@ -18,8 +26,8 @@ function connectTheDots(data){
 
 function run() {
     json = displayPoints(points.value, redIcon);
-    pathCoords = connectTheDots(json);
-    var pathLine = L.polyline(pathCoords).addTo(mymap);
+    //pathCoords = connectTheDots(json);
+    //var pathLine = L.polyline(pathCoords).addTo(mymap);
 }
 
 function displayPoints(points_text, icon) {
@@ -51,6 +59,15 @@ redIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
   iconSize: [5, 10],
+  iconAnchor: [3, 5],
+  popupAnchor: [1, -34],
+  shadowSize: [5, 5]
+});
+
+greenicon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [13, 20],
   iconAnchor: [3, 5],
   popupAnchor: [1, -34],
   shadowSize: [5, 5]

@@ -2,6 +2,7 @@ package locationfudger;
 
 import java.util.Random;
 import java.util.concurrent.*;
+import java.io.*;  
 import java.time.Clock;
 
 public class Test {
@@ -12,8 +13,19 @@ public class Test {
 
 	private static final float MIN_ACCURACY = 1;
 	private static final float MAX_ACCURACY = 100;
+	private static final int APPROXIMATE_METERS_PER_DEGREE_AT_EQUATOR = 111_000;
 
 	private Random mRandom;
+
+	private static double metersToDegreesLatitude(double distance) {
+	    return distance / APPROXIMATE_METERS_PER_DEGREE_AT_EQUATOR;
+	}
+
+	// requires latitude since longitudinal distances change with distance from equator.
+	private static double metersToDegreesLongitude(double distance, double lat) {
+	    return distance / APPROXIMATE_METERS_PER_DEGREE_AT_EQUATOR / Math.cos(Math.toRadians(lat));
+	}
+
 
 	public static Location move(Location location) {
 		location.setLatitude(location.getLatitude() + (1 + 1 * Math.random() - 1) / 100);
@@ -52,8 +64,79 @@ public class Test {
 	}
 
 
-	public static void main(String[] args) {
-		standStillForXMilliSeconds(100000);
+	public static void main(String[] args) throws IOException {
+		double lat;
+		double lon;
+
+		switch(args[0]) {
+			case "preciseToApprox": // Converts a directories precise locations to approximate
+				convertAllInDirectoryToApprox("/Users/joakimloxdal/GoogleDrive/KTH/exjobb/exjobb/results/simulated");
+				break;
+			case "moveAround": // Moves around randomly for x seconds and records approx loc
+				moveAround(new Integer(args[1]));
+				break;
+			case "standStill": // Stands still for x seconds and records approx loc
+				standStillForXMilliSeconds(new Integer(args[1]));
+				break;
+			case "generateGrid": // For diagram in the thesis
+				lat = new Double(args[1]);
+				lon = new Double(args[2]);
+				generateGrid(lat, lon);
+				break;
+			case "showRandomOffset": // For diagram in the thesis
+				lat = new Double(args[1]);
+				lon = new Double(args[2]);
+				int x = new Integer(args[3]);
+				showRandomOffset(lat, lon, x);
+				break;
+			default:
+				break;
+		}
+	}
+
+	public static Location preciseLocToApprox(double lat, double lon, LocationFudger lf) {
+		Location fine = createLocation("test", lat, lon, 2000.0f);
+		Location coarse = lf.createCoarse(fine);
+		return coarse;
+	}
+
+	public static String preciseRouteToApprox(String filepath) throws IOException {
+		LocationFudger lf = new LocationFudger(2000.0f);
+		FileReader fr = new FileReader(new File(filepath));  
+		BufferedReader br = new BufferedReader(fr);
+		String line = br.readLine();
+		String result = "";
+		while (line != null && !line.isEmpty()) {
+		    String[] loc = line.split(",");
+		    double lat = Double.parseDouble(loc[2]);
+		    double lon = Double.parseDouble(loc[3]);
+		    Location coarse = preciseLocToApprox(lat, lon, lf);
+			result += loc[0] + "," + loc[1] + "," + coarse.getLatitude() + "," + coarse.getLongitude() + "\n";
+			line = br.readLine();
+		}
+		return result;
+	}
+
+	public static void convertAllInDirectoryToApprox(String dirname) throws IOException {
+		File folder = new File(dirname + "/precise");
+		File[] preciseFiles = folder.listFiles();
+		System.out.println(preciseFiles.length);
+
+		for (int i = 0; i < preciseFiles.length; i++) {
+		  if (preciseFiles[i].isFile()) {
+		  	String filename = preciseFiles[i].getName();
+		  	String filepath = dirname + "/precise/" + filename;
+		    String approx = preciseRouteToApprox(filepath);
+		    System.out.println("Writing..");
+		    File file = new File(dirname + "/approximate/" + filename);
+		    FileOutputStream fos = new FileOutputStream(file);
+		    BufferedOutputStream bos = new BufferedOutputStream(fos);
+		    byte[] bytes = approx.getBytes();
+		    bos.write(bytes);
+		    bos.close();
+		    fos.close();
+		  }
+		}
 	}
 
 	public static void moveAround(int x) {
@@ -79,7 +162,7 @@ public class Test {
 
 		for (int i = 0; i < x; i++) {
 			try{
-				Thread.sleep(1);
+				Thread.sleep(1); // sleep 1ms to update the random offset
 			} catch(InterruptedException e) {
 				System.out.println("Time Error!");
 			}
@@ -91,10 +174,31 @@ public class Test {
 
 	}
 
-	public static void showRandomOffset(int x) {
-		Location fine = createLocation("test", new Random());
+	/*
+	** Used to generate approximate locations to show how the grid looks like
+	** for a diagram in the report.
+	*/
+	public static void generateGrid(double lat, double lon) {
+		LocationFudger lf = new LocationFudger(2000.0f);
+		Location start = createLocation("test", lat, lon, 2000.0f);
+		for (int i = 0; i < 50; i++) {
+			for (int j = 0; j < 50; j++) {
+				Location fine = createLocation("test", 
+					start.getLatitude() + i * metersToDegreesLatitude(2000.0f), 
+					start.getLongitude() + j * metersToDegreesLongitude(2000.0f, start.getLatitude()), 
+					2000.0f);
+				Location coarse = lf.createCoarse(fine);
+				System.out.println(coarse.getLatitude() + "," + coarse.getLongitude());
+			}
+
+		}
+	}
+
+	public static void showRandomOffset(double lat, double lon, int x) {
+		Location fine = createLocation("test", lat, lon, 2000.0f);
 		LocationFudger lf = new LocationFudger(2000.0f);
 		Location coarse = lf.createCoarse(fine);
+		System.out.println(fine.getLatitude() + "," + fine.getLongitude());
 
 		for (int i = 0; i < x; i++) {
 			try{
@@ -105,8 +209,7 @@ public class Test {
 			fine = createLocation("test", fine.getLatitude(), fine.getLongitude(), 2000.0f);
 			coarse = lf.createCoarse(fine);
 			double offset[] = lf.getOffset(fine);
-			System.out.println(fine.getLatitude() + ";" + fine.getLongitude() +
-				";" + offset[0] + ";" + offset[1]);
+			System.out.println(offset[0] + "," + offset[1]);
 		}
 
 	}

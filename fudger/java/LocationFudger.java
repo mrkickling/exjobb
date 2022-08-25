@@ -29,7 +29,7 @@ public class LocationFudger {
     private static final float MIN_ACCURACY_M = 200.0f;
 
     // how often random offsets are updated
-    static final long OFFSET_UPDATE_INTERVAL_MS = 1;
+    static final long OFFSET_UPDATE_INTERVAL_MS = 0.001; // NOTE: Changed by Joakim Loxdal for thesis project
 
     // the percentage that we change the random offset at every interval. 0.0 indicates the random
     // offset doesn't change. 1.0 indicates the random offset is completely replaced every interval
@@ -179,7 +179,6 @@ public class LocationFudger {
         double latitude = wrapLatitude(fine.getLatitude());
         double longitude = wrapLongitude(fine.getLongitude());
 
-        // add offsets - update longitude first using the non-offset latitude
         longitude += wrapLongitude(metersToDegreesLongitude(mLongitudeOffsetM, latitude));
         latitude += wrapLatitude(metersToDegreesLatitude(mLatitudeOffsetM));
         return new double[]{latitude, longitude};

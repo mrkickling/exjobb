@@ -3,6 +3,7 @@ from location import Location
 from datetime import datetime, timedelta
 import math
 import copy
+import os
 
 class GTFSReader:
 	folder_rel = "None"
@@ -59,11 +60,27 @@ class GTFSReader:
 		route_id = routes_filtered_nr.iat[0,0]
 		# Find a trip id of route
 		trips_filtered = self.trips_csv[(self.trips_csv.route_id == route_id)]
-		trip_id = trips_filtered["trip_id"].iloc[10]
-		stoptimes_filtered = self.stop_times[(self.stop_times.trip_id == trip_id)]
-		stops = pd.merge(stoptimes_filtered, self.stops_csv, on="stop_id")
+		found = False
+		for i in range(len(trips_filtered)):
+			trip_id = trips_filtered["trip_id"].iloc[i]
+			stoptimes_filtered = self.stop_times[(self.stop_times.trip_id == trip_id)]
+			stops = pd.merge(stoptimes_filtered, self.stops_csv, on="stop_id")
+			if stops["arrival_time"].iloc[-1] < "24:00:00":
+				break
+		result = ""
 		for index, row in stops.iterrows():
-		    print(str(row["arrival_time"]) + "," + str(row["stop_lat"]) + "," + str(row["stop_lon"]))
+		    result += "date," + str(row["arrival_time"]) + "," + str(row["stop_lat"]) + "," + str(row["stop_lon"])
+		    result += '\n'
+		print(result)
+		return result
+
+	def output_all_bus_stops(self, folder):
+		for index, row in self.routes_csv.iterrows():
+			if row["route_type"] == 700: # if route is a bus
+				filename = folder + "/" + row["route_short_name"] + "-" + self.folder_rel.split("/")[1] + ".csv"
+				with open(filename, "w") as f:
+					f.write(self.get_stops_of_route(row["route_short_name"]))
+			print("done bus", row["route_short_name"])
 
 	def dist_between(self, lat1, lon1, lat2, lon2):
 		earthRadiusKm = 6371
@@ -94,26 +111,38 @@ class GTFSReader:
 	
 	def route_nr_from_shape(self, shape_id):
 		trips = self.trips_csv[(self.trips_csv["shape_id"] == shape_id)]
-		route_id = trips["route_id"].iloc[0]
-		routes = self.routes_csv[(self.routes_csv["route_id"] == route_id)]
-		unique_nrs = routes.route_short_name.unique()
-		return unique_nrs[0]
-	
+		if not trips.empty:
+			route_id = trips["route_id"].iloc[0]
+			routes = self.routes_csv[(self.routes_csv["route_id"] == route_id)]
+			unique_nrs = routes.route_short_name.unique()
+			return unique_nrs[0]
+		else:
+			return None
+
 	def route_id_from_shape(self, shape_id):
+		print("shapeid:", str(shape_id))
+		print("shapeid:", shape_id)
 		trips = self.trips_csv[(self.trips_csv["shape_id"] == shape_id)]
-		route_id = trips["route_id"].iloc[0]
-		return route_id
+		if not trips.empty:
+			route_id = trips["route_id"].iloc[0]
+			return route_id
+		else:
+			return None
 
 	def route_nrs_from_shapes(self, shapes):
 		result = []
 		for shape_id in shapes:
-			result.append(self.route_nr_from_shape(shape_id))
+			route_nr = self.route_nr_from_shape(shape_id)
+			if route_nr is not None:
+				result.append(route_nr)
 		return self.unique_items(result)
 
 	def route_ids_from_shapes(self, shapes):
 		result = []
 		for shape_id in shapes:
-			result.append(self.route_id_from_shape(shape_id))
+			route_id = self.route_id_from_shape(shape_id)
+			if route_id is not None:
+				result.append(route_id)
 		return self.unique_items(result)
 
 	def most_common_in_frequency_table(self, frequency_table):
@@ -231,6 +260,23 @@ class GTFSReader:
 		frequency_table_route_nr = self.get_potential_trips_from_user_route(userroute, potential_routes)
 		print(frequency_table_route_nr)
 		print("Most probable route(s):", self.most_common_in_frequency_table(frequency_table_route_nr))
-		#print(frequency_table_trip_id)
-		#print("Most probable trip_id:", self.most_common_in_frequency_table(frequency_table_trip_id))
-
+		result = self.most_common_in_frequency_table(frequency_table_route_nr)		
+		return str(result)
+	
+	def infer_all_in_directory(self, indir, outdir):
+		in_files = os.listdir(indir)
+		out_files = os.listdir(outdir)
+		for file in in_files:
+			file_path = indir + "/" + file
+			print(file)
+			if file in out_files:
+				print("Already done this file")
+				continue
+			try:
+				result = self.combined_infer_route(file_path)
+			except:
+				print("Something went wrong with", file)
+				result = ""
+			with open(outdir + "/" + file, "w") as f:
+				f.write(result)
+			self.fetch_data()
